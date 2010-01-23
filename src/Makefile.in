@@ -1,0 +1,53 @@
+# @configure_input@
+
+# $URL$
+# $Author$
+# $Date$
+# $Rev$
+
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+package = @PACKAGE_NAME@
+version = @PACKAGE_VERSION@
+
+
+CC = gcc
+CFLAGS = -Wall
+LIBFLAGS = -c
+DBGFLAGS = -g
+
+
+#User should not be here, but I don't want this to fail
+user_error:
+	@echo "*** Running the default package in the parent directory ***"
+	@echo
+	@$(MAKE) -C ..
+
+cleanup:
+	@-rm -f *.o
+
+#Compile the source code - DO NOT COMPILE "main.c" - that is a separate test executable
+build:
+	$(CC) $(CFLAGS) $(LIBFLAGS) \
+	$(srcdir)/xaut.c $(srcdir)/xaut_display.c $(srcdir)/xaut_keyboard.c \
+	$(srcdir)/xaut_mouse.c $(srcdir)/xaut_window.c $(srcdir)/xautpy_wrap.c \
+	-I/usr/include/python2.6/ -I/usr/include/X11/ \
+	-DHAVE_CONFIG_H -DEN_US -DLESS_THAN_FIX
+
+build_test:
+	$(CC) $(CFLAGS) $(DBGFLAGS) \
+	$(srcdir)/xaut.c $(srcdir)/xaut_display.c $(srcdir)/xaut_keyboard.c \
+	$(srcdir)/xaut_mouse.c $(srcdir)/xaut_window.c $(srcdir)/main.c \
+	-I/usr/include/python2.6/ -I/usr/include/X11/ \
+	-lX11 -lXtst \
+	-DHAVE_CONFIG_H -DEN_US -DLESS_THAN_FIX \
+	-o $(package)_test
+
+
+#Link the shared library for the Python module
+link:
+	ld -shared $(srcdir)/xaut.o $(srcdir)/xaut_display.o \
+	$(srcdir)/xaut_keyboard.o $(srcdir)/xaut_mouse.o $(srcdir)/xaut_window.o \
+	$(srcdir)/xautpy_wrap.o \
+	/usr/lib/libX11.so /usr/lib/libXtst.so -o _$(package)py.so

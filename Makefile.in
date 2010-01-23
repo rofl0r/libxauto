@@ -1,0 +1,107 @@
+# @configure_input@
+
+# $URL$
+# $Author$
+# $Date$
+# $Rev$
+
+
+basedir = @srcdir@
+srcdir = $(basedir)/src
+VPATH = @srcdir@
+package = @PACKAGE_NAME@
+version = @PACKAGE_VERSION@
+tarname = $(package)
+distdir = $(tarname)-$(version)
+
+#DO NOT add "$(MAKE) -C src $@" to this target!
+$(package): build link copy
+
+install:
+	cd python && python setup.py install
+
+clean: cleanup $(package)
+
+cleanup: clean_lib
+	$(MAKE) -C src $@ $+
+
+clean_lib:
+	@if test -f python/$(package)/_$(package)py*; \
+	then echo rm python/$(package)/_$(package)py*; \
+	rm python/$(package)/_$(package)py*; \
+	fi
+
+build:
+	$(MAKE) -C src $@ $+
+
+link: build
+	$(MAKE) -C src $@ $+
+
+copy: build link clean_lib
+	mv $(srcdir)/_$(package)py* python/$(package)/
+	-mkdir -p python/build/lib
+	cp python/$(package)/$(package).py python/build/lib
+	cp python/$(package)/_$(package)* python/build/lib
+
+dist: $(distdir).tar.gz
+
+test: build_test
+	-mkdir -p test
+	mv $(srcdir)/$(package)_test test
+	@echo
+	@echo
+	@echo "********************************************************************************"
+	@echo " Note that this only builds the test program - it does not run it."
+	@echo " Go into the test directory and execute $(package)_test to run the tests."
+	@echo "********************************************************************************"
+	@echo
+
+build_test:
+	$(MAKE) -C src $@ $+
+
+$(distdir).tar.gz: FORCE $(distdir)
+	tar chof - $(distdir) | gzip -9 -c >$(distdir).tar.gz
+	rm -rf $(distdir)
+
+$(distdir):
+	mkdir -p $(distdir)/src
+	cp configure $(distdir)
+	cp COPYRIGHT $(distdir)
+	cp Makefile.in $(distdir)
+	cp README $(distdir)
+	cp install-sh $(distdir)
+	cp config.h.in $(distdir)
+	cp $(srcdir)/config.h $(distdir)/src
+	cp $(srcdir)/main.c $(distdir)/src
+	cp $(srcdir)/Makefile.in $(distdir)/src
+	cp $(srcdir)/xaut.c $(distdir)/src
+	cp $(srcdir)/xaut_display.c $(distdir)/src
+	cp $(srcdir)/xaut_display.h $(distdir)/src
+	cp $(srcdir)/xaut.h $(distdir)/src
+	cp $(srcdir)/xaut_keyboard.c $(distdir)/src
+	cp $(srcdir)/xaut_keyboard.h $(distdir)/src
+	cp $(srcdir)/xaut_mouse.c $(distdir)/src
+	cp $(srcdir)/xaut_mouse.h $(distdir)/src
+	cp $(srcdir)/xautpy.i $(distdir)/src
+	cp $(srcdir)/xautpy_wrap.c $(distdir)/src
+	cp $(srcdir)/xaut_types.h $(distdir)/src
+	cp $(srcdir)/xaut_window.c $(distdir)/src
+	cp $(srcdir)/xaut_window.h $(distdir)/src
+	mkdir -p $(distdir)/python/$(package)
+	cp $(basedir)/python/egg-info $(distdir)/python/$(package)-$(version).egg-info
+	cp $(basedir)/python/setup.py $(distdir)/python/
+	cp $(basedir)/python/xaut/xaut.py $(distdir)/python/$(package)
+	mkdir -p $(distdir)/docs/html
+	cp $(basedir)/docs/html/display.html $(distdir)/docs/html
+	cp $(basedir)/docs/html/index.html $(distdir)/docs/html
+	cp $(basedir)/docs/html/keyboard.html $(distdir)/docs/html
+	cp $(basedir)/docs/html/mouse.html $(distdir)/docs/html
+	cp $(basedir)/docs/html/other.html $(distdir)/docs/html
+	cp $(basedir)/docs/html/window.html $(distdir)/docs/html
+	cp $(basedir)/docs/html/xaut.css $(distdir)/docs/html
+
+FORCE:
+	-rm $(distdir).tar.gz &> /dev/null
+	-rm -rf $(distdir) &> /dev/null
+
+.PHONY: $(package) dist FORCE clean

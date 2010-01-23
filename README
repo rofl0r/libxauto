@@ -1,0 +1,14 @@
+$URL$
+$Author$
+$Date$
+$Rev$
+
+=== PREAMBLE
+This software is intended to help users of XWindows automate basic windowing
+tasks.  For example you can open, move, and close windows based on title,
+you can move the mouse, or send keystrokes.
+
+I provide this software free of charge without warranty of any type.  I
+provide this in the hopes that it will be useful.  In the event you break
+this software, you are entitled to a full refund of the amount I charged. :)
+
