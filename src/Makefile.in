@@ -5,17 +5,18 @@
 # $Date$
 # $Rev$
 
-
-srcdir = @srcdir@
-VPATH = @srcdir@
+srcdir  = @srcdir@
+VPATH   = @srcdir@
 package = @PACKAGE_NAME@
 version = @PACKAGE_VERSION@
 
 
-CC = gcc
+CC = @CC@
 CFLAGS = -Wall
 LIBFLAGS = -c
 DBGFLAGS = -g
+
+LOCAL_PYTHON_VERSION = @LOCAL_PYTHON_VERSION@
 
 
 #User should not be here, but I don't want this to fail
@@ -29,17 +30,19 @@ cleanup:
 
 #Compile the source code - DO NOT COMPILE "main.c" - that is a separate test executable
 build:
+	swig -python xautpy.i
+	rm xautpy.py
 	$(CC) $(CFLAGS) $(LIBFLAGS) \
 	$(srcdir)/xaut.c $(srcdir)/xaut_display.c $(srcdir)/xaut_keyboard.c \
 	$(srcdir)/xaut_mouse.c $(srcdir)/xaut_window.c $(srcdir)/xautpy_wrap.c \
-	-I/usr/include/python2.6/ -I/usr/include/X11/ \
+	-I/usr/include/python$(LOCAL_PYTHON_VERSION)/ -I/usr/include/X11/ \
 	-DHAVE_CONFIG_H -DEN_US -DLESS_THAN_FIX
 
 build_test:
 	$(CC) $(CFLAGS) $(DBGFLAGS) \
 	$(srcdir)/xaut.c $(srcdir)/xaut_display.c $(srcdir)/xaut_keyboard.c \
 	$(srcdir)/xaut_mouse.c $(srcdir)/xaut_window.c $(srcdir)/main.c \
-	-I/usr/include/python2.6/ -I/usr/include/X11/ \
+	-I/usr/include/python$(LOCAL_PYTHON_VERSION)/ -I/usr/include/X11/ \
 	-lX11 -lXtst \
 	-DHAVE_CONFIG_H -DEN_US -DLESS_THAN_FIX \
 	-o $(package)_test

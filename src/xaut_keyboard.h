@@ -20,7 +20,7 @@ $Rev$
 #ifndef XAUT_KEYBOARD_H_
 #define XAUT_KEYBOARD_H_
 
-#import "xaut.h"
+#include "xaut.h"
 
 /**
  * How long the keyboard key stays down when "clicked" in milliseconds.

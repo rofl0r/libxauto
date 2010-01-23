@@ -17,8 +17,8 @@ $Date$
 $Rev$
 */
 
-#import "xaut_display.h"
-#import "xaut_window.h"
+#include "xaut_display.h"
+#include "xaut_window.h"
 
 int display_h() {
     if (!_check_init()) {

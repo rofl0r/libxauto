@@ -5,7 +5,6 @@
 # $Date$
 # $Rev$
 
-
 basedir = @srcdir@
 srcdir = $(basedir)/src
 VPATH = @srcdir@
@@ -13,6 +12,7 @@ package = @PACKAGE_NAME@
 version = @PACKAGE_VERSION@
 tarname = $(package)
 distdir = $(tarname)-$(version)
+LOCAL_PYTHON_VERSION = @LOCAL_PYTHON_VERSION@
 
 #DO NOT add "$(MAKE) -C src $@" to this target!
 $(package): build link copy
@@ -42,6 +42,12 @@ copy: build link clean_lib
 	-mkdir -p python/build/lib
 	cp python/$(package)/$(package).py python/build/lib
 	cp python/$(package)/_$(package)* python/build/lib
+	@echo
+	@echo "********************************************************************************"
+	@echo xaut is ready for use.  Copy ./python/xaut/xaut.py and ./python/xaut/_xautpy.so
+	@echo to the same directory as your script.
+	@echo "********************************************************************************"
+	@echo
 
 dist: $(distdir).tar.gz
 
@@ -69,8 +75,8 @@ $(distdir):
 	cp COPYRIGHT $(distdir)
 	cp Makefile.in $(distdir)
 	cp README $(distdir)
-	cp install-sh $(distdir)
 	cp config.h.in $(distdir)
+	cp install.sh $(distdir)
 	cp $(srcdir)/config.h $(distdir)/src
 	cp $(srcdir)/main.c $(distdir)/src
 	cp $(srcdir)/Makefile.in $(distdir)/src
@@ -83,7 +89,6 @@ $(distdir):
 	cp $(srcdir)/xaut_mouse.c $(distdir)/src
 	cp $(srcdir)/xaut_mouse.h $(distdir)/src
 	cp $(srcdir)/xautpy.i $(distdir)/src
-	cp $(srcdir)/xautpy_wrap.c $(distdir)/src
 	cp $(srcdir)/xaut_types.h $(distdir)/src
 	cp $(srcdir)/xaut_window.c $(distdir)/src
 	cp $(srcdir)/xaut_window.h $(distdir)/src
@@ -101,7 +106,7 @@ $(distdir):
 	cp $(basedir)/docs/html/xaut.css $(distdir)/docs/html
 
 FORCE:
-	-rm $(distdir).tar.gz &> /dev/null
-	-rm -rf $(distdir) &> /dev/null
+	-rm $(distdir).tar.gz
+	-rm -rf $(distdir)
 
 .PHONY: $(package) dist FORCE clean

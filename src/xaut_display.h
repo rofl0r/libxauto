@@ -20,7 +20,7 @@ $Rev$
 #ifndef XAUT_DISPLAY_H_
 #define XAUT_DISPLAY_H_
 
-#import "xaut.h"
+#include "xaut.h"
 
 /**
  * Returns the height of the screen in pixels.

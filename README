@@ -3,7 +3,7 @@ $Author$
 $Date$
 $Rev$
 
-=== PREAMBLE
+=== Preamble ===
 This software is intended to help users of XWindows automate basic windowing
 tasks.  For example you can open, move, and close windows based on title,
 you can move the mouse, or send keystrokes.
@@ -11,4 +11,62 @@ you can move the mouse, or send keystrokes.
 I provide this software free of charge without warranty of any type.  I
 provide this in the hopes that it will be useful.  In the event you break
 this software, you are entitled to a full refund of the amount I charged. :)
+
+
+=== My Rationale ===
+There are a few X11 control libraries out there.  My basic problem with
+most of them  are that they are all called from the bash prompt.  This is fine,
+but it makes it difficult to do things like track window state.  At each call
+to the program, window information is gathered again, and the request is
+processed.
+
+
+=== What you'll need to compile this ===
+Note that Ubuntu (along with some other distributions of Linux) do not come
+with a development environment installed.  You'll need to install a development
+environment if you do not already have one.
+
+Ubuntu (and similar):
+ -- build-essential
+
+Programs:
+ -- swig
+
+Libraries:
+ -- x11proto-xext-dev
+ -- libx11-dev
+ -- libxtst-dev
+
+Specifically if you are using Ubuntu and wish to compile this software, you can
+use the following command:
+
+$ sudo aptitude install build-essential swig x11proto-xext-dev libx11-dev \
+  libxtst-dev
+
+
+=== If you want to modify the build ===
+ -- autoconf
+ -- automake
+ -- libtool
+
+=== What you'll need to run this ===
+This software was originally written against Python 2.6.  It's likely that
+there are few (if any) things which will prevent this code from running in
+Python 3.x.  However, I do not have Python 3.x installed, and cannot test it.
+
+To run this software - like say for example you compile it on one machine, and
+then transport the binary to another machine - make sure you have the following
+libraries installed:
+ -- libx11-dev
+ -- libxtst-dev
+
+=== Installing this software ===
+I highly recommend that you do not install this software.  It is simply beyond
+my resources to test this software in a wide variety of environments, and it's
+likely that automated update tools and the like will cause problems on your
+computer if you ignore this advice.  Note that there is a "make install" build
+target, which is installed for completeness sake, but I suggest you ignore it.
+
+All you need to do to use this software is make sure that xaut.py and
+_xautpy.so are in the same directory as your script.
 
