@@ -50,9 +50,9 @@ void TEST_verbose() {
     char *routine = "TEST_verbose";
     printf(testing, routine);
     verbose(FALSE);
-    assert(defaults->verbose == FALSE);
+    assert(!(defaults->log_level & LOG_LEVEL_VERBOSE));
     verbose(TRUE);
-    assert(defaults->verbose);
+    assert(defaults->log_level & LOG_LEVEL_VERBOSE);
     verbose(FALSE);
     printf(done, routine);
 }
@@ -60,9 +60,9 @@ void TEST_extra_verbose() {
     char *routine = "TEST_extra_verbose";
     printf(testing, routine);
     extra_verbose(FALSE);
-    assert(defaults->extra_verbose == FALSE);
+    assert(!(defaults->log_level & LOG_LEVEL_EXTRA_VERBOSE));
     extra_verbose(TRUE);
-    assert(defaults->extra_verbose);
+    assert(defaults->log_level & LOG_LEVEL_EXTRA_VERBOSE);
     verbose(FALSE);
     extra_verbose(FALSE);
     printf(done, routine);
@@ -570,8 +570,6 @@ int main(int argc, char* argv[]) {
     sleep(3);
     TEST_cleanup();
     TEST_is_valid();
-
-//    return 0;
     TEST_verbose();
     TEST_extra_verbose();
     TEST_init_defaults();

@@ -27,24 +27,20 @@ short mouse_move_delay(short delay) {
     if(delay < 0) {
         return defaults->mouse_move_delay;
     }
-    if(defaults->extra_verbose) {
-        if(defaults->mouse_move_delay > 0) {
-            char *msg = "The mouse used to pause at each pixel for %hu"
-                " milliseconds\n";
-            fprintf(stderr, msg, defaults->mouse_move_delay);
-        } else {
-            fprintf(stderr, "The mouse used to move instantly");
-        }
+    if(defaults->mouse_move_delay > 0) {
+        char *msg = "The mouse used to pause at each pixel for %hu"
+            " milliseconds\n";
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, defaults->mouse_move_delay);
+    } else {
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "%s", "The mouse used to move instantly");
     }
     defaults->mouse_move_delay = delay;
-    if(defaults->extra_verbose) {
-        if(defaults->mouse_move_delay > 0) {
-            char *msg = "The mouse now pauses at each pixel for %hu"
-                " milliseconds\n";
-            fprintf(stderr, msg, defaults->mouse_move_delay);
-        } else {
-            fprintf(stderr, "The mouse now moves instantly");
-        }
+    if(defaults->mouse_move_delay > 0) {
+        char *msg = "The mouse now pauses at each pixel for %hu"
+            " milliseconds\n";
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, defaults->mouse_move_delay);
+    } else {
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "%s", "The mouse now moves instantly");
     }
     return defaults->mouse_move_delay;
 }
@@ -56,16 +52,16 @@ short mouse_down_delay(short delay) {
     if(delay < 1) {
         return defaults->mouse_down_delay;
     }
-    if(defaults->extra_verbose) {
+    {
         char *msg = "The mouse button used to stay down for %hu"
-                " milliseconds when clicked\n";
-        fprintf(stderr, msg, defaults->mouse_down_delay);
+            " milliseconds when clicked\n";
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, defaults->mouse_down_delay);
     }
     defaults->mouse_down_delay = delay;
-    if(defaults->extra_verbose) {
+    {
         char *msg = "The mouse button now stays down for %hu"
-                " milliseconds when clicked\n";
-        fprintf(stderr, msg, defaults->mouse_down_delay);
+            " milliseconds when clicked\n";
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, defaults->mouse_down_delay);
     }
     return defaults->mouse_down_delay;
 }
@@ -77,16 +73,16 @@ short mouse_click_delay(short delay) {
     if(delay < 1) {
         return defaults->mouse_click_delay;
     }
-    if(defaults->extra_verbose) {
+    {
         char *msg = "The mouse button used to pause for %hu"
-                " milliseconds between clicks\n";
-        fprintf(stderr, msg, defaults->mouse_down_delay);
+            " milliseconds between clicks\n";
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, defaults->mouse_down_delay);
     }
     defaults->mouse_click_delay = delay;
-    if(defaults->extra_verbose) {
+    {
         char *msg = "The mouse button now pauses for %hu"
-                " milliseconds between clicks\n";
-        fprintf(stderr, msg, defaults->mouse_down_delay);
+            " milliseconds between clicks\n";
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, defaults->mouse_down_delay);
     }
     return defaults->mouse_click_delay;
 }
@@ -104,18 +100,14 @@ BOOL mouse_click(unsigned short btn, unsigned short count) {
     unsigned short i;
     for (i = 0; i < count; i++) {
         success = mouse_down(btn);
-        if (defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Mouse button %d down ", btn);
-        }
+        logit(LOG_LEVEL_VERBOSE, "Mouse button %d down ", btn);
         if (!success) {
             mouse_up(btn); //Just in case
             break;
         }
         usleep(MILLI_MULTIPLIER * defaults->mouse_down_delay);
         success = mouse_up(btn);
-        if (defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Mouse button %d up\n", btn);
-        }
+        logit(LOG_LEVEL_VERBOSE, "Mouse button %d up\n", btn);
         if (i < count - 1) {
             usleep(MILLI_MULTIPLIER * defaults->mouse_click_delay);
         }
@@ -139,9 +131,7 @@ BOOL move_mouse(int newX, int newY, Window win) {
         return FALSE;
     }
     BOOL success = TRUE;
-    if (defaults->verbose || defaults->extra_verbose) {
-        fprintf(stderr, "Window handle: %lu\n", win);
-    }
+    logit(LOG_LEVEL_VERBOSE, "Window handle: %lu\n", win);
     if (win) {
         success = _normalize_wincoords(&newX, &newY, win);
         if(success == FALSE) {
@@ -217,15 +207,11 @@ void _mouse_xy(int *ret, Window win) {
     Window query_window;
     if(win == 0) {
         query_window = DefaultRootWindow(defaults->display);
-        if(defaults->extra_verbose) {
-            fprintf(stderr, "Getting mouse xy against root window\n");
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "%s", "Getting mouse xy against root window\n");
     } else {
         if(is_valid(win)) {
             query_window = find_outer_parent(win);
-            if(defaults->extra_verbose) {
-                fprintf(stderr, "Getting mouse xy against window %lu\n", win);
-            }
+            logit(LOG_LEVEL_EXTRA_VERBOSE, "Getting mouse xy against window %lu\n", win);
         } else {
             fprintf(stderr, "Window %lu was not valid for xy -"
                     " returning absolute coordinates\n", win);
@@ -257,17 +243,15 @@ void _mouse_xy(int *ret, Window win) {
 
     if(success) {
         if(is_valid(win)) {
-            if(defaults->extra_verbose) {
-                fprintf(stderr, "Mouse is at %d X %d relative to window %lu\n",
-                        winx, winy, win);
-            }
+            logit(LOG_LEVEL_EXTRA_VERBOSE,
+                    "Mouse is at %d X %d relative to window %lu\n",
+                    winx, winy, win);
             ret[0] = winx;
             ret[1] = winy;
         } else {
-            if(defaults->extra_verbose) {
-                fprintf(stderr, "Mouse is at %d X %d relative to the root window\n",
-                        winx, winy);
-            }
+            logit(LOG_LEVEL_EXTRA_VERBOSE,
+                    "Mouse is at %d X %d relative to the root window\n",
+                    winx, winy);
             ret[0] = rootx;
             ret[1] = rooty;
         }
@@ -279,9 +263,7 @@ void _mouse_xy(int *ret, Window win) {
 }
 
 BOOL _do_movement(int x, int y) {
-    if (defaults->extra_verbose) {
-        fprintf(stderr, "Moving mouse to %d X %d\n", x, y);
-    }
+    logit(LOG_LEVEL_EXTRA_VERBOSE, "Moving mouse to %d X %d\n", x, y);
     int status = XTestFakeMotionEvent(defaults->display, -1, x, y, CurrentTime );
     XSync(defaults->display, FALSE);
     return status != 0;

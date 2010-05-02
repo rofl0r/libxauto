@@ -63,4 +63,5 @@ long get_current_desktop();
  */
 BOOL set_current_desktop(long window_desktop);
 
+extern void logit(int, char*, ...);
 #endif /* XAUT_DISPLAY_H_ */

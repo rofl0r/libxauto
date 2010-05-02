@@ -26,4 +26,8 @@ static const BOOL TRUE = 1;
 static const BOOL FALSE = 0;
 static const unsigned short ZERO = 0;
 
+static const int LOG_LEVEL_NONE = 0;
+static const int LOG_LEVEL_VERBOSE = 1;
+static const int LOG_LEVEL_EXTRA_VERBOSE = 2;
+
 #endif /* DEFAULTS_H_ */

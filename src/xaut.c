@@ -18,6 +18,7 @@ $Rev$
 */
 
 #include "xaut.h"
+#include <stdarg.h>
 
 // --- Published subroutines, functions and structures
 
@@ -37,13 +38,30 @@ void cleanup() {
 
 void verbose(BOOL verbose) {
     if (_check_init()) {
-        defaults->verbose = (verbose != 0);
+        if(verbose) {
+            defaults->log_level |= LOG_LEVEL_VERBOSE;
+        } else {
+            defaults->log_level &= (! LOG_LEVEL_VERBOSE);
+        }
     }
 }
 
 void extra_verbose(BOOL extra_verbose) {
     if (_check_init()) {
-        defaults->extra_verbose = (extra_verbose != 0);
+        if(extra_verbose) {
+            defaults->log_level |= LOG_LEVEL_EXTRA_VERBOSE;
+        } else {
+            defaults->log_level &= (! LOG_LEVEL_EXTRA_VERBOSE);
+        }
+    }
+}
+
+void logit(int level, char *msg, ...) {
+    if(defaults->log_level >= level) {
+        va_list args;
+        va_start(args, msg);
+        vfprintf(stderr, msg, args);
+        va_end(args);
     }
 }
 
@@ -58,6 +76,9 @@ void _add_code(unsigned short code, BOOL shifted) {
 BOOL _check_init() {
     if (!defaults || !defaults->dsp_width) {
         _initialize();
+    }
+    if (!ascii_codes) {
+        _init_ascii();
     }
     if (defaults->dsp_width) {
         return TRUE;
@@ -182,8 +203,7 @@ BOOL init_defaults() {
     defaults->mouse_click_delay = 10;
     defaults->key_down_delay = 10;
     defaults->key_click_delay = 5;
-    defaults->verbose = FALSE;
-    defaults->extra_verbose = FALSE;
+    defaults->log_level = LOG_LEVEL_NONE;
     defaults->interpret_meta_symbols = TRUE;
     return TRUE;
 }
@@ -247,9 +267,7 @@ void _normalize_coords(int *x, int *y) {
     } else if (*y > defaults->dsp_height) {
         y = &defaults->dsp_height;
     }
-    if (defaults->verbose || defaults->extra_verbose) {
-        fprintf(stderr, "Final mouse location %d X %d\n", *x, *y);
-    }
+    logit(LOG_LEVEL_VERBOSE, "Final mouse location %d X %d\n", *x, *y);
 }
 
 BOOL _normalize_wincoords(int *x, int *y, unsigned long win) {
@@ -270,10 +288,8 @@ BOOL _normalize_wincoords(int *x, int *y, unsigned long win) {
         int winy = window_y(win);
         *x = winx + *x;
         *y = winy + *y;
-        if (defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Window at %d X %d\n", winx, winy);
-            fprintf(stderr, "Relative location %d X %d\n", *x, *y);
-        }
+        logit(LOG_LEVEL_VERBOSE, "Window at %d X %d\n", winx, winy);
+        logit(LOG_LEVEL_VERBOSE, "Relative location %d X %d\n", *x, *y);
         ret = TRUE;
     } else {
         fprintf(stderr, "Window handle %lu appears to be invalid\n", win);

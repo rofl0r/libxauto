@@ -176,14 +176,10 @@ Window find_window(char *title) {
     unsigned int found = 0;
     for(i = 0; i < count; i++) {
         char *win_title = window_name(windows[i]);
-        if(defaults->extra_verbose) {
-            fprintf(stderr, "Testing to see if '%s' matches '%s'\n",
-                    title, win_title);
-        }
-        if (!regexec(regx, win_title, 0, NULL, 0)) {
-            if(defaults->verbose || defaults->extra_verbose) {
-                fprintf(stderr, "Adding '%s' as a match\n", win_title);
-            }
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "Testing to see if '%s' matches '%s'\n",
+                title, win_title);
+        if (win_title && !regexec(regx, win_title, 0, NULL, 0)) {
+            logit(LOG_LEVEL_VERBOSE, "Adding '%s' as a match\n", win_title);
             match_buffer[found] = windows[i];
             found++;
         }
@@ -191,18 +187,12 @@ Window find_window(char *title) {
     }
     Window final_ret = 0;
     if(found == 0) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "No matches found for '%s'\n", title);
-        }
+        logit(LOG_LEVEL_VERBOSE, "No matches found for '%s'\n", title);
     } else if(found == 1) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Only one match found for '%s'\n", title);
-        }
+        logit(LOG_LEVEL_VERBOSE, "Only one match found for '%s'\n", title);
         final_ret = match_buffer[0];
     } else {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "%d matches found for '%s'\n", found, title);
-        }
+        logit(LOG_LEVEL_VERBOSE, "%d matches found for '%s'\n", found, title);
         qsort(match_buffer, found, sizeof(Window), _window_search_comparator);
         final_ret = match_buffer[0];
     }
@@ -245,18 +235,12 @@ Window* search_for_window(char *title) {
     _recursive_window_search(search);
     XSetErrorHandler(NULL);
     if(search->found == 0) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "No matches found for '%s'\n", title);
-        }
+        logit(LOG_LEVEL_VERBOSE, "No matches found for '%s'\n", title);
     } else if(search->found == 1) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Only one match found for '%s'\n", title);
-        }
+        logit(LOG_LEVEL_VERBOSE, "Only one match found for '%s'\n", title);
     } else {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "%d matches found for '%s'\n",
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "%d matches found for '%s'\n",
                     search->found, title);
-        }
         qsort(search->buffer, search->found, sizeof(Window),
                 _window_search_comparator);
     }
@@ -289,29 +273,23 @@ BOOL move_window(Window win, int x, int y, long desktop) {
     }
     BOOL moved = _move_window_to_desktop(win, desktop);
     if(moved == FALSE) {
-        fprintf(stderr, "Unable to move window %lu to desktop %lu\n", win, desktop);
+        fprintf(stderr, "Unable to move window %lu to desktop %lu\n",
+                win, desktop);
     }
     if((x < 0) && (y < 0)) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Leaving window at it's current x y coordinates\n");
-        }
+        logit(LOG_LEVEL_VERBOSE, "%s",
+                "Leaving window at it's current x y coordinates\n");
         return TRUE;
     } else if(x < 0) {
-        if(defaults->extra_verbose) {
-            fprintf(stderr,
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "%s",
                 "Using current window x coordinate as its destination\n");
-        }
         x = window_x(win);
     } else if(y < 0) {
-        if(defaults->extra_verbose) {
-            fprintf(stderr,
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "%s",
                 "Using current window y coordinate as its destination\n");
-        }
         y = window_y(win);
     }
-    if(defaults->verbose || defaults->extra_verbose) {
-        fprintf(stderr, "Moving window %lu to %d X %d\n", win, x, y);
-    }
+    logit(LOG_LEVEL_VERBOSE, "Moving window %lu to %d X %d\n", win, x, y);
     XMoveWindow(defaults->display, win, x, y);
     XFlush(defaults->display);
     return TRUE;
@@ -639,13 +617,11 @@ long window_desktop(Window win) {
     } else {
         desktop = -2;
     }
-    if (defaults->verbose || defaults->extra_verbose) {
-        if(desktop == -1) {
-            fprintf(stderr, "The window %lu is currently on all desktops\n", win);
-        } else {
-            fprintf(stderr, "The window %lu is currently on desktop %lu\n",
-                    win, (desktop + 1));
-        }
+    if(desktop == -1) {
+        logit(LOG_LEVEL_VERBOSE, "The window %lu is currently on all desktops\n", win);
+    } else {
+        logit(LOG_LEVEL_VERBOSE, "The window %lu is currently on desktop %lu\n",
+                win, (desktop + 1));
     }
     if(window_desktop) {
         XFree(window_desktop);
@@ -686,14 +662,12 @@ BOOL _alter_window_state(Window win, long action, long datal1, long datal2) {
 
 BOOL _ensure_window_buffer_size(_window_search *search) {
     if (search->buffer_size == search->found) {
-        if(defaults->extra_verbose) {
-            fprintf(stderr, "Growing window search results buffer from %d ",
-                    search->buffer_size);
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE,
+                "Growing window search results buffer from %d ",
+                search->buffer_size);
         search->buffer_size += 20;
-        if(defaults->extra_verbose) {
-            fprintf(stderr, "to %d elements\n", search->buffer_size);
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "to %d elements\n",
+                search->buffer_size);
         search->buffer = realloc(search->buffer, search->buffer_size
                 * sizeof(Window));
         if (search->buffer) {
@@ -707,26 +681,19 @@ BOOL _ensure_window_buffer_size(_window_search *search) {
 }
 
 BOOL _move_window_to_desktop(Window win, long desktop) {
-    if(defaults->extra_verbose) {
-        fprintf(stderr, "Received desktop value %ld for window %lu\n",
-                desktop, win);
-    }
+    logit(LOG_LEVEL_EXTRA_VERBOSE,
+            "Received desktop value %ld for window %lu\n", desktop, win);
     char *event_name = "_NET_WM_DESKTOP";
     if (desktop < 0) {
-        if(defaults->extra_verbose) {
-            fprintf(stderr, "Desktop %ld means 'leave it where it is'\n",
-                    desktop);
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE,
+                "Desktop %ld means 'leave it where it is'\n", desktop);
         return TRUE;
     } else if(desktop == 0) {
-        if(defaults->extra_verbose) {
-            fprintf(stderr, "Desktop 0 means 'put it on all desktops'\n");
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "%s", "Desktop 0 means 'put it on all desktops'\n");
     } else {
-        if(defaults->extra_verbose) {
-            fprintf(stderr, "Moving window %lu to desktop %ld\n",
-                    win, desktop);
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE,
+                "Moving window %lu to desktop %ld\n",
+                win, desktop);
     }
     if (!_check_init()) {
         return FALSE;
@@ -744,17 +711,13 @@ BOOL _move_window_to_desktop(Window win, long desktop) {
         return FALSE;
     }
     if (desktop == window_desktop(win)) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Window is already on the target desktop\n");
-        }
+        logit(LOG_LEVEL_VERBOSE, "Window is already on the target desktop\n");
         return TRUE;
     }
     desktop--; //Force desktop to be one based rather than zero based
-    if(defaults->verbose || defaults->extra_verbose) {
-        fprintf(stderr,
-                "*Actual* final destination desktop of window %lu is %ld\n",
-                win, desktop);
-    }
+    logit(LOG_LEVEL_VERBOSE,
+            "*Actual* final destination desktop of window %lu is %ld\n",
+            win, desktop);
     XEvent event;
     memset(&event, 0, sizeof(event));
     event.xclient.format = 32;
@@ -800,21 +763,17 @@ void _recursive_window_search(_window_search *search) {
         }
         char *title = window_name(children[i]);
         if (title) {
-            if(defaults->extra_verbose) {
-                fprintf(stderr, "Testing to see if '%s' matches '%s'\n",
-                        search->title, title);
-            }
+            logit(LOG_LEVEL_EXTRA_VERBOSE,
+                    "Testing to see if '%s' matches '%s'\n",
+                    search->title, title);
             if (!regexec(*search->regx, title, 0, NULL, 0)) {
                 unsigned long win_desk = window_desktop(children[i]);
                 if(win_desk > desk_count){
-                    if(defaults->verbose || defaults->extra_verbose) {
-                        fprintf(stderr, "Skipping %lu because its hidden\n",
-                                children[i]);
-                    }
+                    logit(LOG_LEVEL_VERBOSE,
+                            "Skipping %lu because its hidden\n",
+                            children[i]);
                 }
-                if(defaults->verbose || defaults->extra_verbose) {
-                    fprintf(stderr, "Adding '%s' as a match\n", title);
-                }
+                logit(LOG_LEVEL_VERBOSE, "Adding '%s' as a match\n", title);
                 if (_ensure_window_buffer_size(search)) {
                     Window res = children[i];
                     search->buffer[search->found] = res;
@@ -845,54 +804,46 @@ int _window_search_comparator(const void *l, const void *r) {
         long difL = fabs(curr - ldesk);
         long difR = fabs(curr - rdesk);
         if (difL < difR) {
-            if(defaults->extra_verbose) {
-                char *msg = "'%s' comes before '%s' because its"
-                        " desktop %ld is closer to %ld than %l\n";
-                fprintf(stderr, msg,
-                        window_name(winL),
-                        window_name(winR),
-                        ldesk,
-                        curr,
-                        rdesk);
-            }
+            char *msg = "'%s' comes before '%s' because its"
+                " desktop %ld is closer to %ld than %l\n";
+            logit(LOG_LEVEL_EXTRA_VERBOSE, msg,
+                    window_name(winL),
+                    window_name(winR),
+                    ldesk,
+                    curr,
+                    rdesk);
             return -1;
         } else if (difL > difR) {
-            if(defaults->extra_verbose) {
-                char *msg = "'%s' comes before '%s' because its"
-                        " desktop %ld is closer to %ld than %l\n";
-                fprintf(stderr, msg,
-                        window_name(winR),
-                        window_name(winL),
-                        rdesk,
-                        curr,
-                        ldesk);
-            }
+            char *msg = "'%s' comes before '%s' because its"
+                " desktop %ld is closer to %ld than %l\n";
+            logit(LOG_LEVEL_EXTRA_VERBOSE, msg,
+                    window_name(winR),
+                    window_name(winL),
+                    rdesk,
+                    curr,
+                    ldesk);
             return 1;
         }
     }
 
     //If we're here, we sort by id
     if (winL < winR) {
-        if(defaults->extra_verbose) {
-            char *msg = "'%s' comes before '%s' because its"
-                    " id %ld is lower than %ld\n";
-            fprintf(stderr,msg,
-                    window_name(winL),
-                    window_name(winR),
-                    winL,
-                    winR);
-        }
+        char *msg = "'%s' comes before '%s' because its"
+            " id %ld is lower than %ld\n";
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg,
+                window_name(winL),
+                window_name(winR),
+                winL,
+                winR);
         return -1;
     } else if (winR < winL) {
-        if(defaults->extra_verbose) {
             char *msg = "'%s' comes before '%s' because its"
                     " id %ld is lower than %ld\n";
-            fprintf(stderr,msg,
+            logit(LOG_LEVEL_EXTRA_VERBOSE, msg,
                     window_name(winR),
                     window_name(winL),
                     winR,
                     winL);
-        }
         return 1;
     } else {
         return 0;

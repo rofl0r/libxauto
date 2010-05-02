@@ -57,8 +57,7 @@ typedef struct {
     unsigned short key_down_delay;
     unsigned short key_click_delay;
     BOOL interpret_meta_symbols;
-    BOOL verbose;
-    BOOL extra_verbose;
+    unsigned short log_level;
 } xautpy_defaults_t;
 
 /**

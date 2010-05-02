@@ -120,9 +120,7 @@ BOOL set_current_desktop(long desktop) {
         return FALSE;
     }
 
-    if(defaults->verbose || defaults->extra_verbose) {
-        fprintf(stderr, "Switching to desktop %ld", desktop);
-    }
+    logit(LOG_LEVEL_VERBOSE, "Switching to desktop %ld\n", desktop);
     desktop--; //Force desktop to be one based rather than zero based
     if(desktop < 0) {
         char *msg = "This software starts desktop indexes at 1, so your"

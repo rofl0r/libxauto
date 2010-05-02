@@ -24,21 +24,17 @@ short key_down_delay(short delay) {
         return 0;
     }
     if(delay < 0) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Leaving key down delay at %hu\n",
-                    defaults->key_down_delay);
-        }
+        logit(LOG_LEVEL_VERBOSE, "Leaving key down delay at %hu\n",
+                defaults->key_down_delay);
         return defaults->key_down_delay;
     }
-    if(defaults->extra_verbose) {
-        char *msg = "Keys used to stay down %hu milliseconds when clicked\n";
-        fprintf(stderr, msg, defaults->key_down_delay);
-    }
+    logit(LOG_LEVEL_EXTRA_VERBOSE,
+            "Keys used to stay down %hu milliseconds when clicked\n",
+            defaults->key_down_delay);
     defaults->key_down_delay = delay;
-    if(defaults->extra_verbose) {
-        char *msg = "Keys now stay down %hu milliseconds when clicked\n";
-        fprintf(stderr, msg, defaults->key_down_delay);
-    }
+    logit(LOG_LEVEL_EXTRA_VERBOSE,
+            "Keys now stay down %hu milliseconds when clicked\n",
+            defaults->key_down_delay);
     return defaults->key_down_delay;
 }
 
@@ -47,21 +43,18 @@ short key_click_delay(short delay) {
         return 0;
     }
     if(delay < 0) {
-        if(defaults->verbose || defaults->extra_verbose) {
-            fprintf(stderr, "Leaving key down delay at %hu\n",
+        logit(LOG_LEVEL_VERBOSE, "Leaving key down delay at %hu\n",
                     defaults->key_click_delay);
-        }
         return defaults->key_click_delay;
     }
-    if(defaults->extra_verbose) {
-        char *msg = "Keys used to wait %hu milliseconds between clicks\n";
-        fprintf(stderr, msg, defaults->key_click_delay);
-    }
+    logit(LOG_LEVEL_EXTRA_VERBOSE,
+            "Keys used to wait %hu milliseconds between clicks\n",
+            defaults->key_click_delay);
+
     defaults->key_click_delay = delay;
-    if(defaults->extra_verbose) {
-        char *msg = "Keys now wait %hu milliseconds between clicks\n";
-        fprintf(stderr, msg, defaults->key_click_delay);
-    }
+    logit(LOG_LEVEL_EXTRA_VERBOSE,
+            "Keys now wait %hu milliseconds between clicks\n",
+            defaults->key_click_delay);
     return defaults->key_click_delay;
 }
 
@@ -85,9 +78,7 @@ BOOL key_down(unsigned int key) {
     int success = XTestFakeKeyEvent(defaults->display, key, TRUE, CurrentTime);
     XFlush(defaults->display);
     if (success) {
-        if (defaults->extra_verbose) {
-            fprintf(stderr, "Pressed %d ", key);
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "Pressed %d ", key);
     } else {
         fprintf(stderr, "Failure to press %d ", key);
     }
@@ -102,9 +93,7 @@ BOOL key_up(unsigned int key) {
     BOOL success = (release != 0);
     XFlush(defaults->display);
     if (success) {
-        if (defaults->extra_verbose) {
-            fprintf(stderr, "Released %d ", key);
-        }
+        logit(LOG_LEVEL_EXTRA_VERBOSE, "Released %d", key);
     } else {
         fprintf(stderr, "Failure to release %d\n", key);
     }
@@ -114,16 +103,16 @@ BOOL key_up(unsigned int key) {
 void interpret_meta_symbols(BOOL tf) {
     //"BOOL" is actually a short - so I'm going
     //to filter the value sent.
-    if(defaults->extra_verbose) {
+    {
         char *msg = "I was %sinterpreting meta symbols\n";
         char *yn = defaults->interpret_meta_symbols ? "" : "not ";
-        fprintf(stderr, msg, yn);
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, yn);
     }
     defaults->interpret_meta_symbols = (tf) ? TRUE : FALSE;
-    if(defaults->extra_verbose) {
+    {
         char *msg = "Now I will %sinterpret meta symbols\n";
         char *yn = defaults->interpret_meta_symbols ? "" : "not ";
-        fprintf(stderr, msg, yn);
+        logit(LOG_LEVEL_EXTRA_VERBOSE, msg, yn);
     }
 }
 
@@ -175,9 +164,7 @@ BOOL type(char *str) {
     if (!_check_init()) {
         return FALSE;
     }
-    if (defaults->verbose || defaults->extra_verbose) {
-        fprintf(stderr, "Sending '%s'\n", str);
-    }
+    logit(LOG_LEVEL_VERBOSE, "Sending '%s'\n", str);
     BOOL success = TRUE;
 
     size_t index = 0;
@@ -194,9 +181,7 @@ BOOL type(char *str) {
             if(defaults->interpret_meta_symbols) {
                 if (!shft_pressed) {
                     shft_pressed = TRUE;
-                    if (defaults->verbose || defaults->extra_verbose) {
-                        fprintf(stderr, "Shift_L down ");
-                    }
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Shift_L down ");
                     success &= key_down(SHIFT_L);
                     meta[down] = SHIFT_L;
                     down++;
@@ -207,9 +192,7 @@ BOOL type(char *str) {
             if(defaults->interpret_meta_symbols) {
                 if (!ctl_pressed) {
                     ctl_pressed = TRUE;
-                    if (defaults->verbose || defaults->extra_verbose) {
-                        fprintf(stderr, "Control_L down ");
-                    }
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Control_L down ");
                     success &= key_down(CONTROL_L);
                     meta[down] = CONTROL_L;
                     down++;
@@ -221,9 +204,7 @@ BOOL type(char *str) {
                 if (!alt_pressed) {
                     alt_pressed = TRUE;
                     success &= key_down(ALT_L);
-                    if (defaults->verbose || defaults->extra_verbose) {
-                        fprintf(stderr, "Alt_L down ");
-                    }
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Alt_L down ");
                     meta[down] = ALT_L;
                     down++;
                 }
@@ -234,9 +215,7 @@ BOOL type(char *str) {
                 if (!meta_pressed) {
                     meta_pressed = TRUE;
                     success &= key_down(META_L);
-                    if (defaults->verbose || defaults->extra_verbose) {
-                        fprintf(stderr, "META_L down ");
-                    }
+                    logit(LOG_LEVEL_VERBOSE, "%s", "META_L down ");
                     meta[down] = META_L;
                     down++;
                 }
@@ -245,8 +224,8 @@ BOOL type(char *str) {
         case ('{'):
             if( defaults->interpret_meta_symbols) {
                 index = _handle_keycode(index, str);
-                if (down > 0 && (defaults->verbose || defaults->extra_verbose)) {
-                    fprintf(stderr, "Meta keys released ");
+                if (down > 0) {
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Meta keys released ");
                 }
                 while (down > 0) {
                     down--;
@@ -256,9 +235,7 @@ BOOL type(char *str) {
                 shft_pressed = FALSE;
                 ctl_pressed = FALSE;
                 alt_pressed = FALSE;
-                if (defaults->verbose || defaults->extra_verbose) {
-                    printf("\n");
-                }
+                logit(LOG_LEVEL_VERBOSE, "%s", "\n");
                 break;
             }
         default:
@@ -267,25 +244,21 @@ BOOL type(char *str) {
                 int code = ascii_codes[key].code;
                 if (ascii_codes[key].shifted && !shft_pressed) {
                     shft_pressed = TRUE;
-                    if (defaults->verbose || defaults->extra_verbose) {
-                        fprintf(stderr, "Shift_L down ");
-                    }
+                    logit(LOG_LEVEL_VERBOSE, "Shift_L down ");
                     success &= key_down(SHIFT_L);
                     meta[down] = SHIFT_L;
                     down++;
                 }
-                if (defaults->verbose || defaults->extra_verbose) {
-                    if (str[index] == ' ') {
-                        fprintf(stderr, "Typing (space) ");
-                    } else if (str[index] == '\t') {
-                        fprintf(stderr, "Typing (tab) ");
-                    } else {
-                        fprintf(stderr, "Typing %c ", str[index]);
-                    }
+                if (str[index] == ' ') {
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Typing (space) ");
+                } else if (str[index] == '\t') {
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Typing (tab) ");
+                } else {
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Typing %c ", str[index]);
                 }
                 success &= key_click(code);
-                if (down > 0 && (defaults->verbose || defaults->extra_verbose)) {
-                    fprintf(stderr, "Meta keys released ");
+                if (down > 0) {
+                    logit(LOG_LEVEL_VERBOSE, "%s", "Meta keys released ");
                 }
                 while (down > 0) {
                     down--;
@@ -295,9 +268,7 @@ BOOL type(char *str) {
                 shft_pressed = FALSE;
                 ctl_pressed = FALSE;
                 alt_pressed = FALSE;
-                if (defaults->verbose || defaults->extra_verbose) {
-                    fprintf(stderr, "\n");
-                }
+                logit(LOG_LEVEL_VERBOSE, "%s", "\n");
                 XFlush(defaults->display);
 
                 if (str[index + 1]) {
@@ -423,18 +394,14 @@ size_t _handle_keycode(size_t curr, char *str) {
         unsigned short i;
         if (meta->shifted) {
             key_down(SHIFT_L);
-            if (defaults->verbose || defaults->extra_verbose) {
-                fprintf(stderr, "Shift_L down ");
-            }
+            logit(LOG_LEVEL_VERBOSE, "%s", "Shift_L down ");
         }
         for (i = 0; i < meta->count; i++) {
             key_click(meta->keycode);
-            if (defaults->verbose || defaults->extra_verbose) {
-                if (meta->keycode == ascii_codes['{'].code) {
-                    fprintf(stderr, "Typing { ");
-                } else {
-                    fprintf(stderr, "Typing metakey %s ", meta->name);
-                }
+            if (meta->keycode == ascii_codes['{'].code) {
+                logit(LOG_LEVEL_VERBOSE, "%s", "Typing { ");
+            } else {
+                logit(LOG_LEVEL_VERBOSE, "Typing metakey %s ", meta->name);
             }
             if (i + 1 < meta->count) {
                 usleep(MILLI_MULTIPLIER * defaults->key_click_delay);
@@ -442,9 +409,7 @@ size_t _handle_keycode(size_t curr, char *str) {
         }
         if (meta->shifted) {
             key_up(SHIFT_L);
-            if (defaults->verbose || defaults->extra_verbose) {
-                fprintf(stderr, "Shift_L up ");
-            }
+            logit(LOG_LEVEL_VERBOSE, "%s", "Shift_L up ");
         }
     }
     free(meta->name);
