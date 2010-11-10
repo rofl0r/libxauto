@@ -64,9 +64,11 @@ link:
 	/usr/lib/libX11.so /usr/lib/libXtst.so -o $(package).so
 
 install:
+	echo "install target currently incomplete. copy libxauto.so manually to you lib dir, i.e. /usr/lib"
 	cp $(srcdir)/xaut.h /usr/include
 	cp $(srcdir)/xaut_display.h /usr/include
 	cp $(srcdir)/xaut_keyboard.h /usr/include
 	cp $(srcdir)/xaut_mouse.h /usr/include
 	cp $(srcdir)/xaut_window.h /usr/include
+	cp $(srcdir)/xaut_types.h /usr/include
 	
