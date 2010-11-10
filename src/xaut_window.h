@@ -35,8 +35,7 @@
  * get ready to accept input".
  *
  * Note that some window managers do not support
- * or will suppress this.  If that is the case, you
- * may wish to try "switch_to_window".
+ * or will suppress this.
  * @param the win to the window
  * @return boolean indication of success
  */
